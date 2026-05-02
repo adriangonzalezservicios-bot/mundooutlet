@@ -3,7 +3,6 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Plus } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { cn } from "../lib/utils";
-import { AIAssistant } from "../components/AIAssistant";
 import { motion, AnimatePresence } from "motion/react";
 
 // Map routes to titles
@@ -90,8 +89,6 @@ export function Layout() {
           </AnimatePresence>
         </main>
       </div>
-      
-      <AIAssistant />
     </div>
   );
 }

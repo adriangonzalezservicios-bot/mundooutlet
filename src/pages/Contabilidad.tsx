@@ -6,8 +6,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils";
-import { exportToExcel } from "../lib/excel";
-import { processFileWithGemini } from "../lib/gemini";
+import { exportToExcel, importFromExcel } from "../lib/excel";
 import { downloadTemplate } from "../lib/templates";
 
 export function Contabilidad() {
@@ -48,11 +47,23 @@ export function Contabilidad() {
 
     setIsImporting(true);
     try {
-      const result = await processFileWithGemini(file, "Extrae los movimientos contables de este archivo. Para cada movimiento necesito: Fecha, Tipo (Ingreso/Egreso), Categoría, Monto, Descripción y Medio de Pago.");
-      alert(result.message);
+      const data = await importFromExcel(file);
+      data.forEach((row: any) => {
+        if (row.Monto && row.Monto > 0) {
+           addTransaction({
+             date: row.Fecha ? new Date(row.Fecha).toISOString() : new Date().toISOString(),
+             type: row.Tipo === 'Egreso' ? 'Egreso' : 'Ingreso',
+             category: row.Categoria || 'Otro',
+             amount: Number(row.Monto),
+             description: row.Descripcion || 'Importado desde Excel',
+             paymentMethod: row.MedioPago || 'Efectivo'
+           });
+        }
+      });
+      alert(`Se han importado ${data.length} movimientos exitosamente.`);
     } catch (error) {
       console.error(error);
-      alert("Error al procesar el archivo con la IA.");
+      alert("Error al procesar el archivo Excel.");
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -171,8 +182,8 @@ export function Contabilidad() {
               disabled={isImporting}
               className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[#7BA4BD] hover:text-[#8AB4CC] transition-all text-xs font-bold uppercase tracking-widest shadow-sm disabled:opacity-50"
             >
-              {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Importar IA
+              {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 rotate-180" />}
+              Importar
             </button>
 
             <button 

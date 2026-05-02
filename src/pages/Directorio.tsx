@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatCurrency } from "../lib/format";
-import { User, Truck, Phone, Plus, Search, Mail, MapPin, Edit2, Check, X, Trash2, Download, Users } from "lucide-react";
+import { User, Truck, Phone, Plus, Search, Mail, MapPin, Edit2, Check, X, Trash2, Download, Users, Loader2 } from "lucide-react";
 import { useStore } from "../store/useStore";
 import { cn } from "../lib/utils";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { exportToExcel } from "../lib/excel";
+import { exportToExcel, importFromExcel } from "../lib/excel";
 
 export function Directorio() {
   const { clients, providers, updateClient, updateProvider, addClient, addProvider, deleteClient, deleteProvider } = useStore();
@@ -24,6 +24,13 @@ export function Directorio() {
   const [activeTab, setActiveTab] = useState<'clientes' | 'proveedores'>(
     location.pathname.includes('proveedores') ? 'proveedores' : 'clientes'
   );
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 400);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   useEffect(() => {
     if (searchParams.get('action') === 'new') {
@@ -45,6 +52,52 @@ export function Directorio() {
   }
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const data = await importFromExcel(file);
+      data.forEach((row: any) => {
+        if (row.Nombre) {
+          if (activeTab === 'clientes') {
+            addClient({
+              name: row.Nombre,
+              type: row.Tipo || 'Consumidor Final',
+              debt: Number(row.Deuda) || 0,
+              phone: String(row.Telefono || ''),
+              email: row.Email || '',
+              address: row.Direccion || ''
+            });
+          } else {
+            addProvider({
+              name: row.Nombre,
+              contact: row.Contacto || '',
+              balance: Number(row.Saldo) || 0,
+              phone: String(row.Telefono || ''),
+              email: row.Email || '',
+              address: row.Direccion || ''
+            });
+          }
+        }
+      });
+      alert(`Se han importado ${data.length} registros exitosamente.`);
+    } catch (error) {
+      console.error(error);
+      alert("Error al procesar el archivo Excel.");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
   
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>({});
@@ -124,6 +177,17 @@ export function Directorio() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-[#38bdf8]" />
+        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+          Cargando {activeTab}...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <motion.div 
       variants={container}
@@ -174,6 +238,21 @@ export function Directorio() {
             />
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              className="hidden" 
+              accept=".csv,.xlsx,.xls"
+            />
+            <button 
+              onClick={handleImportClick}
+              disabled={isImporting}
+              className="p-3 crystal-panel rounded-2xl text-slate-400 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50"
+              title="Importar Excel"
+            >
+              <Download className="w-5 h-5 rotate-180" />
+            </button>
             <button 
               onClick={handleExport}
               className="p-3 crystal-panel rounded-2xl text-slate-400 hover:text-white transition-all shadow-sm active:scale-95"

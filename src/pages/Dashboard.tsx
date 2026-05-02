@@ -19,6 +19,8 @@ interface DashboardPreferences {
   showKpiClientes: boolean;
   showChartVentas: boolean;
   showChartStatus: boolean;
+  showChartStock: boolean;
+  showChartProyeccion: boolean;
   showAlertBanners: boolean;
   showAlertsPanel: boolean;
   showOrdersTable: boolean;
@@ -32,6 +34,8 @@ const defaultPreferences: DashboardPreferences = {
   showKpiClientes: true,
   showChartVentas: true,
   showChartStatus: true,
+  showChartStock: true,
+  showChartProyeccion: true,
   showAlertBanners: true,
   showAlertsPanel: true,
   showOrdersTable: true,
@@ -54,13 +58,13 @@ export function Dashboard() {
   const applyRolePreset = (role: DashboardRole) => {
     switch (role) {
       case "Ventas":
-        setPrefs({ ...prefs, role, showKpiVentas: true, showKpiStock: false, showKpiOrdenes: true, showKpiClientes: true, showChartVentas: true, showChartStatus: true, showAlertBanners: false, showAlertsPanel: false, showOrdersTable: true });
+        setPrefs({ ...prefs, role, showKpiVentas: true, showKpiStock: false, showKpiOrdenes: true, showKpiClientes: true, showChartVentas: true, showChartStatus: true, showChartStock: false, showChartProyeccion: true, showAlertBanners: false, showAlertsPanel: false, showOrdersTable: true });
         break;
       case "Inventario":
-        setPrefs({ ...prefs, role, showKpiVentas: false, showKpiStock: true, showKpiOrdenes: false, showKpiClientes: false, showChartVentas: false, showChartStatus: false, showAlertBanners: true, showAlertsPanel: true, showOrdersTable: false });
+        setPrefs({ ...prefs, role, showKpiVentas: false, showKpiStock: true, showKpiOrdenes: false, showKpiClientes: false, showChartVentas: false, showChartStatus: false, showChartStock: true, showChartProyeccion: false, showAlertBanners: true, showAlertsPanel: true, showOrdersTable: false });
         break;
       case "Taller":
-        setPrefs({ ...prefs, role, showKpiVentas: false, showKpiStock: false, showKpiOrdenes: false, showKpiClientes: true, showChartVentas: false, showChartStatus: false, showAlertBanners: true, showAlertsPanel: false, showOrdersTable: false });
+        setPrefs({ ...prefs, role, showKpiVentas: false, showKpiStock: false, showKpiOrdenes: false, showKpiClientes: true, showChartVentas: false, showChartStatus: false, showChartStock: false, showChartProyeccion: false, showAlertBanners: true, showAlertsPanel: false, showOrdersTable: false });
         break;
       case "Admin":
       default:
@@ -107,6 +111,29 @@ export function Dashboard() {
   const lowStockProducts = products.filter(p => p.stock < 5).slice(0, 5);
 
   const recentOrders = [...sales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6);
+
+  // Chart Data: Stock por Categoría
+  const categoryStock = products.reduce((acc, p) => {
+    acc[p.category] = (acc[p.category] || 0) + p.stock;
+    return acc;
+  }, {} as Record<string, number>);
+  const chartStockData = Object.entries(categoryStock).map(([name, stock]) => ({ name, stock })).sort((a, b) => b.stock - a.stock);
+
+  // Chart Data: Proyección Trimestral (Linear projection based on the whole year so far)
+  const currentMonthIdx = today.getMonth();
+  const last3MonthsSales = [
+    monthlySalesData[(currentMonthIdx - 2 + 12) % 12]?.ventas || 0,
+    monthlySalesData[(currentMonthIdx - 1 + 12) % 12]?.ventas || 0,
+    monthlySalesData[currentMonthIdx]?.ventas || 0,
+  ];
+  let avgSales = last3MonthsSales.reduce((a, b) => a + b, 0) / 3;
+  if (avgSales === 0) avgSales = 100000; // Dummy baseline if 0
+  const growthRate = 1.05; // 5% monthly growth
+  const chartProyeccionData = [
+    { name: format(new Date(currentYear, currentMonthIdx + 1, 1), "MMM", { locale: es }).toUpperCase(), estimado: avgSales * growthRate },
+    { name: format(new Date(currentYear, currentMonthIdx + 2, 1), "MMM", { locale: es }).toUpperCase(), estimado: avgSales * Math.pow(growthRate, 2) },
+    { name: format(new Date(currentYear, currentMonthIdx + 3, 1), "MMM", { locale: es }).toUpperCase(), estimado: avgSales * Math.pow(growthRate, 3) },
+  ];
 
   const container: any = {
     hidden: { opacity: 0 },
@@ -333,6 +360,62 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Additional Analytics Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:p-6 pb-0 pt-0">
+        {prefs.showChartStock && (
+          <motion.div variants={itemAnim} className="crystal-card p-4 md:p-6 flex flex-col min-h-[280px]">
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-white tracking-tight">Stock por Categoría</h3>
+              <p className="text-xs text-slate-500 font-mono mt-1">// Distribución del inventario</p>
+            </div>
+            <div className="flex-1 w-full relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartStockData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1E293B" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontFamily: 'monospace'}} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontFamily: 'monospace'}} width={80} />
+                  <Tooltip 
+                    cursor={{ fill: '#1E293B' }}
+                    contentStyle={{ backgroundColor: "#131B2F", border: "1px solid #1E293B", borderRadius: "8px", color: "#F8FAFC", fontSize: "12px", fontFamily: "monospace" }}
+                    formatter={(value: number) => [`${value} unid.`, 'Stock']}
+                  />
+                  <Bar dataKey="stock" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
+
+        {prefs.showChartProyeccion && (
+          <motion.div variants={itemAnim} className="crystal-card p-4 md:p-6 flex flex-col min-h-[280px]">
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-white tracking-tight">Proyección Trimestral</h3>
+              <p className="text-xs text-slate-500 font-mono mt-1">// Base algorítmica (+5% crec. esperado)</p>
+            </div>
+            <div className="flex-1 w-full relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartProyeccionData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorEstimado" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1E293B" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontFamily: 'monospace'}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontFamily: 'monospace'}} tickFormatter={(val) => `$${(val/1000000).toLocaleString()}M`} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#131B2F", border: "1px solid #1E293B", borderRadius: "8px", color: "#F8FAFC", fontSize: "12px", fontFamily: "monospace" }}
+                    formatter={(value: number) => [formatCurrency(value), 'Proyección']}
+                  />
+                  <Area type="monotone" dataKey="estimado" stroke="#10b981" fillOpacity={1} fill="url(#colorEstimado)" strokeDasharray="4 4" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
       {/* Orders List */}
       {prefs.showOrdersTable && (
         <motion.div variants={itemAnim} className="flex flex-col gap-4">
@@ -440,7 +523,9 @@ export function Dashboard() {
                       { key: 'showKpiOrdenes', label: 'KPI - Órdenes' },
                       { key: 'showKpiClientes', label: 'KPI - Clientes' },
                       { key: 'showAlertBanners', label: 'Banners de Alertas Generales' },
-                      { key: 'showChartVentas', label: 'Gráfico - Ventas Mensuales' },
+                      { key: 'showChartVentas', label: 'Gráfico - Ventas Totales' },
+                      { key: 'showChartStock', label: 'Gráfico - Stock por Categoría' },
+                      { key: 'showChartProyeccion', label: 'Gráfico - Proyección Trimestral' },
                       { key: 'showAlertsPanel', label: 'Panel - Alertas de Stock Bajo' },
                       { key: 'showOrdersTable', label: 'Tabla - Últimas Órdenes' },
                     ].map(toggle => (

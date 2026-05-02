@@ -6,8 +6,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "../lib/utils";
 import { motion, AnimatePresence } from "motion/react";
-import { exportToExcel } from "../lib/excel";
-import { processFileWithGemini } from "../lib/gemini";
+import { exportToExcel, importFromExcel } from "../lib/excel";
 import { generateThermalTicket } from "../lib/pdf";
 
 export function Taller() {
@@ -60,11 +59,26 @@ export function Taller() {
 
     setIsImporting(true);
     try {
-      const result = await processFileWithGemini(file, "Extrae los ingresos al taller de este archivo. Para cada ingreso necesito: Equipo (Marca/Modelo), Falla reportada, Costo estimado y Estado.");
-      alert(result.message);
+      const data = await importFromExcel(file);
+      data.forEach((row: any) => {
+        if (row.Equipo && row.Falla) {
+          addWorkshopJob({
+            device: row.Equipo,
+            issue: row.Falla,
+            cost: Number(row.Costo) || 0,
+            status: row.Estado || 'Pendiente',
+            clientId: row.ClienteId || '',
+            dateIn: new Date().toISOString(),
+            sku: row.SKU,
+            serie: row.Serie,
+            notes: row.Notas
+          });
+        }
+      });
+      alert(`Se han importado ${data.length} ingresos técnicos exitosamente.`);
     } catch (error) {
       console.error(error);
-      alert("Error al procesar el archivo con la IA.");
+      alert("Error al procesar el archivo Excel.");
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -225,9 +239,9 @@ export function Taller() {
             onClick={handleImportClick}
             disabled={isImporting}
             className="p-3 bg-white/5 border border-white/10 rounded-2xl text-[#7BA4BD] hover:bg-[#7BA4BD]/10 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-            title="Importar con IA"
+            title="Importar Excel"
           >
-            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5 rotate-180" />}
           </button>
 
           <button 

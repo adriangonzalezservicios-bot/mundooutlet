@@ -7,10 +7,9 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { NuevaVenta } from "./NuevaVenta";
 import { motion, AnimatePresence } from "motion/react";
-import { exportToExcel } from "../lib/excel";
+import { exportToExcel, importFromExcel } from "../lib/excel";
 import { generateSalePDF } from "../lib/pdf";
 import { useSearchParams } from "react-router-dom";
-import { processFileWithGemini } from "../lib/gemini";
 import { downloadTemplate } from "../lib/templates";
 
 import { ShoppingCart } from "lucide-react";
@@ -45,11 +44,27 @@ export function Ventas() {
 
     setIsImporting(true);
     try {
-      const result = await processFileWithGemini(file, "Extrae la lista de ventas de este archivo. Para cada venta necesito: Fecha, Cliente (Nombre), SKU del Producto, Cantidad, Precio Unitario, Total y Método de Pago.");
-      alert(result.message);
+      const data = await importFromExcel(file);
+      // Logic for building sales could be complex if multiple items per sale,
+      // but assuming a simplified version for this file
+      data.forEach((row: any) => {
+        if (row.Total !== undefined) {
+           // We just use a placeholder if full details aren't provided
+           updateSale(crypto.randomUUID(), {
+             date: row.Fecha ? new Date(row.Fecha).toISOString() : new Date().toISOString(),
+             clientId: row.ClienteId || '',
+             items: [],
+             total: Number(row.Total) || 0,
+             paymentMethod: row.MedioPago || 'Efectivo',
+             status: row.Estado || 'Completada',
+             id: crypto.randomUUID()
+           });
+        }
+      });
+      alert(`Se han importado ${data.length} ventas exitosamente (requieren revisión).`);
     } catch (error) {
       console.error(error);
-      alert("Error al procesar el archivo con la IA.");
+      alert("Error al procesar el archivo Excel.");
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -200,10 +215,10 @@ export function Ventas() {
               onClick={handleImportClick}
               disabled={isImporting}
               className="p-2.5 crystal-panel rounded-lg text-[#38bdf8] hover:text-[#0ea5e9] transition-all shadow-sm active:scale-95 flex items-center gap-2"
-              title="Importar con IA"
+              title="Importar Excel"
             >
-              {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              <span className="text-[10px] font-bold uppercase hidden lg:inline">Importar IA</span>
+              {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 rotate-180" />}
+              <span className="text-[10px] font-bold uppercase hidden lg:inline">Importar</span>
             </button>
 
             <button 

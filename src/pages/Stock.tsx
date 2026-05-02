@@ -4,9 +4,8 @@ import { PackageSearch, Filter, Plus, Edit2, Check, X, Trash2, Box, BarChart3, A
 import { useStore, Product } from "../store/useStore";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../lib/utils";
-import { exportToExcel } from "../lib/excel";
+import { exportToExcel, importFromExcel } from "../lib/excel";
 import { useSearchParams } from "react-router-dom";
-import { processFileWithGemini } from "../lib/gemini";
 import { TrazabilidadModal } from "../components/TrazabilidadModal";
 import { LoteModal } from "../components/LoteModal";
 import { downloadTemplate } from "../lib/templates";
@@ -35,12 +34,26 @@ export function Stock() {
 
     setIsImporting(true);
     try {
-      const result = await processFileWithGemini(file, "Extrae la lista de productos de este archivo. Para cada producto necesito: SKU, Marca, Modelo, Categoría, Stock actual, Costo, Precio Mayorista y Precio Minorista.");
-      alert(result.message);
-      // Optional: force a refresh if needed, though useStore should auto-update if Gemini used tools
+      const data = await importFromExcel(file);
+      data.forEach((row: any) => {
+        if (row.SKU && row.Modelo) {
+          addProduct({
+            sku: String(row.SKU),
+            brand: row.Marca || '',
+            model: row.Modelo,
+            category: row.Categoria || 'Heladera',
+            stock: Number(row.Stock) || 0,
+            cost: Number(row.Costo) || 0,
+            wholesalePrice: Number(row['Precio Mayorista']) || 0,
+            retailPrice: Number(row['Precio Minorista']) || 0,
+            series: []
+          });
+        }
+      });
+      alert(`Se han importado ${data.length} artículos exitosamente.`);
     } catch (error) {
       console.error(error);
-      alert("Error al procesar el archivo con la IA.");
+      alert("Error al procesar el archivo Excel.");
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -172,10 +185,10 @@ export function Stock() {
             onClick={handleImportClick}
             disabled={isImporting}
             className="p-3 crystal-panel rounded-2xl text-slate-400 hover:text-white transition-all shadow-sm active:scale-95 flex items-center gap-2"
-            title="Importar con IA"
+            title="Importar Excel"
           >
-            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            <span className="text-xs font-bold uppercase hidden sm:inline">Importar IA</span>
+            {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileUp className="w-5 h-5" />}
+            <span className="text-xs font-bold uppercase hidden sm:inline">Importar</span>
           </button>
 
           <button 
