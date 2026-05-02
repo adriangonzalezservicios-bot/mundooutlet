@@ -1,0 +1,151 @@
+{
+  "name": "Ventas Aura",
+  "version": "1.0.0",
+  "colors": {
+    "primary": {
+      "start": "#22D3EE",
+      "end": "#3B82F6"
+    },
+    "background": {
+      "default": "#070B13",
+      "surface": "#0F172A",
+      "overlay": "radial-gradient(circle at top right, #0F172A, #070B13 60%)"
+    },
+    "glass": {
+      "fill": "rgba(255, 255, 255, 0.04)",
+      "border": "rgba(255, 255, 255, 0.08)",
+      "blur": "24px"
+    },
+    "text": {
+      "primary": "#E6EAF2",
+      "secondary": "#8A93A6",
+      "tertiary": "#5A6475",
+      "onPrimary": "#070B13"
+    },
+    "semantic": {
+      "success": {
+        "base": "#10B981",
+        "bg": "rgba(16, 185, 129, 0.15)"
+      },
+      "warning": {
+        "base": "#F59E0B",
+        "bg": "rgba(245, 158, 11, 0.15)"
+      },
+      "danger": {
+        "base": "#EF4444",
+        "bg": "rgba(239, 68, 68, 0.15)"
+      },
+      "info": {
+        "base": "#3B82F6",
+        "bg": "rgba(59, 130, 246, 0.15)"
+      }
+    },
+    "tags": {
+      "mayorista": {
+        "text": "#67E8F9",
+        "bg": "rgba(34, 211, 238, 0.15)"
+      }
+    },
+    "lightMode": {
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "glass": {
+        "fill": "rgba(0, 0, 0, 0.04)",
+        "border": "rgba(0, 0, 0, 0.08)",
+        "blur": "24px"
+      },
+      "text": "#0F172A"
+    }
+  },
+  "typography": {
+    "fontFamily": "'Inter Variable', 'Satoshi', system-ui, sans-serif",
+    "weights": [400, 500, 600],
+    "scale": {
+      "display": {
+        "size": "32px",
+        "desktopSize": "40px",
+        "weight": "semibold"
+      },
+      "title": {
+        "size": "24px",
+        "desktopSize": "32px",
+        "weight": "semibold"
+      },
+      "body": {
+        "size": "16px",
+        "lineHeight": "24px",
+        "weight": "regular"
+      },
+      "caption": {
+        "size": "13px",
+        "lineHeight": "18px",
+        "weight": "medium"
+      },
+      "overline": {
+        "size": "11px",
+        "lineHeight": "16px",
+        "weight": "medium",
+        "textTransform": "uppercase",
+        "letterSpacing": "0.08em"
+      }
+    }
+  },
+  "spacing": {
+    "baseUnit": "4px",
+    "scale": [4, 8, 12, 16, 24, 32, 48],
+    "containerPaddingMobile": "16px",
+    "maxWidth": "390px"
+  },
+  "radius": {
+    "sm": "12px",
+    "md": "16px",
+    "lg": "22px",
+    "xl": "28px",
+    "full": "999px"
+  },
+  "shadows": {
+    "cardShadow": "0 8px 24px rgba(0, 0, 0, 0.25)",
+    "glowPrimary": "0 0 16px rgba(34, 211, 238, 0.2)"
+  },
+  "components": {
+    "buttonPrimary": {
+      "background": "gradient primary",
+      "radius": "full",
+      "padding": "12px 20px",
+      "text": "semibold",
+      "shadow": "glowPrimary"
+    },
+    "buttonGlass": {
+      "background": "glass fill",
+      "border": "glass border",
+      "backdropFilter": "blur(24px)"
+    },
+    "card": {
+      "background": "glass fill",
+      "border": "glass border",
+      "radius": "lg",
+      "padding": "16px",
+      "shadow": "cardShadow"
+    },
+    "inputSearch": {
+      "shape": "pill glass",
+      "iconOpacity": "0.20",
+      "placeholderColor": "text secondary"
+    },
+    "tagPill": {
+      "radius": "full",
+      "padding": "4px 10px",
+      "backgroundOpacity": "0.15",
+      "textSize": "12px",
+      "textWeight": "semibold"
+    },
+    "listItemSales": {
+      "layout": "horizontal",
+      "leftIcon": {
+        "size": "40px",
+        "radius": "md",
+        "bg": "soft blue"
+      }
+    }
+  }
+}
