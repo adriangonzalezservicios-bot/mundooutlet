@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Safety Net: Deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Auth Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Validation Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // ENTITIES VALIDATION
+    
+    function isValidProduct(data) {
+      return data.sku is string && data.sku.size() > 0 && data.sku.size() <= 50
+        && data.retailPrice is number && data.retailPrice >= 0
+        && data.stock is number && data.stock >= 0
+        && data.status in ['Ingresado', 'En Taller', 'Listo', 'Vendido', 'Disponible'];
+    }
+
+    function isValidSale(data) {
+      return data.id is string && data.id.size() > 0
+        && data.total is number && data.total >= 0
+        && data.items is list && data.items.size() > 0
+        && data.status in ['Completada', 'Pendiente', 'Cancelada'];
+    }
+
+    function isValidTransaction(data) {
+      return data.amount is number && data.amount != 0
+        && data.type in ['Ingreso', 'Egreso']
+        && data.date is string;
+    }
+
+    // RULES
+    
+    match /products/{sku} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(sku) && isValidProduct(incoming());
+      allow update: if isSignedIn() && isValidProduct(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /sales/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(id) && isValidSale(incoming());
+      allow update: if isSignedIn() && isValidSale(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /purchases/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    match /transactions/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidTransaction(incoming());
+      allow update: if isSignedIn() && isValidTransaction(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /clients/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /providers/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /workshop_jobs/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /workshop_expenses/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /ai_knowledge/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+  }
+}

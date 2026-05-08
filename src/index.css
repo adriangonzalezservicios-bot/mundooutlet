@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+svg.lucide {
+  stroke-width: 1.5px !important;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-background-start: var(--bg-start, #09090b); /* zinc-950 */
+  --color-background-end: var(--bg-end, #18181b); /* zinc-900 */
+  --color-panel: rgba(24, 24, 27, 0.75); /* zinc-900 with opacity */
+  --color-border: var(--border-color, rgba(255, 255, 255, 0.08));
+  --color-accent: var(--primary-color, #38bdf8); /* sky-400 for that touch of light */
+  --color-accent-hover: var(--primary-hover, #7dd3fc);
+  
+  --color-primary-text: #f4f4f5; /* zinc-50 */
+  --color-secondary-text: var(--primary-color, #94a3b8);
+  --color-danger: var(--secondary-color, #ef4444);
+}
+
+body {
+  background: radial-gradient(circle at top, var(--color-background-end), var(--color-background-start) 100%);
+  background-attachment: fixed;
+  color: var(--color-primary-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  margin: 0;
+  position: relative;
+}
+
+/* Subtle modern grid instead of neon HUD */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center top;
+  pointer-events: none;
+  z-index: -1;
+  mask-image: radial-gradient(circle at top, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at top, black 30%, transparent 80%);
+}
+
+.crystal-card {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 8px; /* Softer radius for modern corporate feel */
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.crystal-card:hover {
+  border-color: rgba(56, 189, 248, 0.2);
+}
+
+.crystal-panel {
+  background: rgba(39, 39, 42, 0.5); /* zinc-800 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.crystal-input {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.crystal-input:focus {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+  outline: none;
+}
+
+.crystal-button {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f4f4f5;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  transition: all 0.2s ease;
+}
+
+.crystal-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.primary-cta {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.15);
+  transition: all 0.2s ease;
+}
+
+.primary-cta:hover {
+  background: var(--color-accent);
+  color: #020617;
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.arch-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.arch-shadow {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom scannable table style */
+.tech-table-header {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8; /* slate-400 */
+}
+
+.tech-data-value {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+

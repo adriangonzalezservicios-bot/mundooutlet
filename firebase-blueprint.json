@@ -1,0 +1,94 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Producto",
+      "description": "Artículos en inventario",
+      "type": "object",
+      "properties": {
+        "sku": { "type": "string", "description": "Identificador único" },
+        "category": { "type": "string", "enum": ["Heladera", "Lavarropas", "Cocina", "Lavavajillas", "Repuesto"] },
+        "brand": { "type": "string" },
+        "model": { "type": "string" },
+        "cost": { "type": "number", "description": "Costo base" },
+        "wholesalePrice": { "type": "number" },
+        "retailPrice": { "type": "number" },
+        "stock": { "type": "number", "description": "Cantidad disponible" },
+        "series": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["Ingresado", "En Taller", "Listo", "Vendido", "Disponible"] },
+        "batchId": { "type": "string" },
+        "description": { "type": "string" },
+        "location": { "type": "string" }
+      },
+      "required": ["sku", "category", "brand", "model", "retailPrice", "stock", "status"]
+    },
+    "Sale": {
+      "title": "Venta",
+      "description": "Registros de ventas completadas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "clientId": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "shippingCost": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string", "enum": ["Completada", "Pendiente", "Cancelada"] }
+      },
+      "required": ["id", "date", "clientId", "items", "total", "status"]
+    },
+    "Purchase": {
+      "title": "Compra",
+      "description": "Adquisiciones a proveedores",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "providerId": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "date", "providerId", "items", "total"]
+    },
+    "Transaction": {
+      "title": "Transacción de Caja",
+      "description": "Movimientos de dinero",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["Ingreso", "Egreso"] },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "paymentMethod": { "type": "string" }
+      },
+      "required": ["id", "date", "type", "amount", "description"]
+    },
+    "Client": {
+      "title": "Cliente",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Mayorista", "Consumidor Final"] },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "debt": { "type": "number" }
+      },
+      "required": ["id", "name", "type"]
+    }
+  },
+  "firestore": {
+    "products": { "schema": "Product", "description": "Colección de inventario" },
+    "sales": { "schema": "Sale", "description": "Colección de ventas" },
+    "purchases": { "schema": "Purchase", "description": "Colección de compras" },
+    "transactions": { "schema": "Transaction", "description": "Colección de caja" },
+    "clients": { "schema": "Client", "description": "Colección de clientes" }
+  }
+}
