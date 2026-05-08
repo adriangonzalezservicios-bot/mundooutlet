@@ -166,6 +166,75 @@ export const generateSalePDF = (sale: Sale, client?: Client, openInNewWindow: bo
   }
 };
 
+export const generateInventoryPDF = (products: Product[]) => {
+  const doc = new jsPDF('landscape');
+
+  // Header
+  doc.rect(0, 0, 297, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MUNDO OUTLET - REPORTE DE STOCK', 14, 20);
+
+  const dateStr = new Date().toLocaleDateString('es-AR', {
+    minute: '2-digit',
+    hour: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generado: ${dateStr}`, 297 - 14, 20, { align: 'right' });
+
+  // Summary logic
+  const totalItems = products.reduce((acc, p) => acc + p.stock, 0);
+  const totalCost = products.reduce((acc, p) => acc + (p.stock * p.cost), 0);
+  const totalRetail = products.reduce((acc, p) => acc + (p.stock * p.retailPrice), 0);
+
+  // Stats boxes
+  doc.setTextColor(50, 50, 50);
+  doc.setFontSize(10);
+
+  doc.text(`Artículos Diferentes: ${products.length}`, 14, 40);
+  doc.text(`Total Unidades: ${totalItems}`, 80, 40);
+  doc.text(`Costo Total: ${formatCurrency(totalCost, false)}`, 140, 40);
+  doc.text(`Valor Venta (Minorista): ${formatCurrency(totalRetail, false)}`, 200, 40);
+
+  const tableData = products.map(p => [
+    p.sku,
+    `${p.brand} - ${p.model}`,
+    p.category,
+    p.stock.toString(),
+    p.location || '-',
+    formatCurrency(p.cost, false),
+    formatCurrency(p.wholesalePrice, false),
+    formatCurrency(p.retailPrice, false)
+  ]);
+
+  autoTable(doc, {
+    startY: 48,
+    head: [['SKU', 'Producto', 'Categoría', 'Stock', 'Ubicación', 'Costo', 'P. Mayorista', 'P. Minorista']],
+    body: tableData,
+    theme: 'grid',
+    headStyles: {
+      fillColor: [10, 17, 30],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    styles: { fontSize: 8 },
+    columnStyles: {
+      3: { halign: 'center' },
+      5: { halign: 'right' },
+      6: { halign: 'right' },
+      7: { halign: 'right' },
+    }
+  });
+
+  const pdfBlobUrl = doc.output('bloburl');
+  window.open(pdfBlobUrl, '_blank');
+};
+
 export const generateThermalTicket = (data: {
   title: string;
   code: string;

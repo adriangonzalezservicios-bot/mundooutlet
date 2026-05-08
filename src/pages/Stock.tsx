@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { formatCurrency } from "../lib/format";
-import { PackageSearch, Filter, Plus, Edit2, Check, X, Trash2, Box, BarChart3, AlertCircle, Download, FileUp, History, Boxes, FileDown, Printer } from "lucide-react";
+import { PackageSearch, Filter, Plus, Edit2, Check, X, Trash2, Box, BarChart3, AlertCircle, Download, FileUp, History, Boxes, FileDown, Printer, FileText } from "lucide-react";
 import { useStore, Product } from "../store/useStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../lib/utils";
@@ -10,7 +10,7 @@ import { useSearchParams } from "react-router-dom";
 import { TrazabilidadModal } from "../components/TrazabilidadModal";
 import { LoteModal } from "../components/LoteModal";
 import { downloadTemplate } from "../lib/templates";
-import { generateThermalTicket, generateStickerLabel, generateMultipleStickerLabels } from "../lib/pdf";
+import { generateThermalTicket, generateStickerLabel, generateMultipleStickerLabels, generateInventoryPDF } from "../lib/pdf";
 import { format } from "date-fns";
 
 export function Stock() {
@@ -234,10 +234,19 @@ export function Stock() {
 
           <button 
             onClick={handleExport}
-            className="p-2.5 crystal-panel rounded-sm border border-[#10b981]/30 text-[#10b981] hover:text-[#10b981] transition-all hover:bg-[#10b981]/10 hover:"
+            className="p-2.5 crystal-panel rounded-sm border border-[#10b981]/30 text-[#10b981] hover:text-[#10b981] transition-all flex items-center gap-2 hover:bg-[#10b981]/10 hover:"
             title="Exportar Excel"
           >
             <Download className="w-4 h-4" />
+          </button>
+          
+          <button 
+            onClick={() => generateInventoryPDF(products)}
+            className="p-2.5 crystal-panel rounded-sm border border-red-500/30 text-red-500 hover:text-red-400 transition-all flex items-center gap-2 hover:bg-red-500/10 hover:"
+            title="Generar Reporte PDF"
+          >
+            <FileText className="w-4 h-4" />
+            <span className="text-[10px] font-mono font-bold uppercase hidden sm:inline tracking-widest">PDF</span>
           </button>
 
           <button 

@@ -385,17 +385,50 @@ export const useStore = create<AppState>()(
       };
       
       let hasValidData = false;
+      
+      // Determine if the entire cloud database is empty across ALL syncing collections
+      const isCloudEmpty = results.every(res => !res.data || res.data.length === 0);
 
-      results.forEach((res) => {
-        // Only update if we successfully fetched the collection (even if empty, to allow deletions sync)
-        if (!res.error && res.data) {
-          const key = keyMap[res.colName];
-          if (key) {
-            (updates as any)[key] = res.data;
-            hasValidData = true;
+      if (isCloudEmpty) {
+        console.log('Cloud is empty. Assuming fresh setup, keeping local state and pushing to cloud.');
+        
+        // Push local state to cloud to initialize it
+        const state = get();
+        try {
+          for (const res of results) {
+            const key = keyMap[res.colName];
+            if (key) {
+              const localItems: any[] = state[key] as any[] || [];
+              for (let i = 0; i < localItems.length; i += 400) {
+                const batchChunk = localItems.slice(i, i + 400);
+                if (batchChunk.length > 0) {
+                  const dbBatch = writeBatch(db);
+                  batchChunk.forEach(item => {
+                    const docId = item.sku || item.id;
+                    if (docId) {
+                      dbBatch.set(doc(db, res.colName, docId), item);
+                    }
+                  });
+                  await dbBatch.commit();
+                }
+              }
+            }
           }
+          console.log('Successfully initialized cloud with local data.');
+        } catch (pushErr) {
+          console.error('Error auto-initializing cloud database:', pushErr);
         }
-      });
+      } else {
+        results.forEach((res) => {
+          if (!res.error && res.data) {
+            const key = keyMap[res.colName];
+            if (key) {
+              (updates as any)[key] = res.data;
+              hasValidData = true;
+            }
+          }
+        });
+      }
       
       if (hasValidData) {
         set(updates);

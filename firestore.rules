@@ -105,6 +105,11 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
+    match /batches/{id} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
     match /ai_knowledge/{id} {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
