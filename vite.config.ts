@@ -37,9 +37,6 @@ export default defineConfig(({mode}) => {
         }
       })
     ],
-    define: {
-      'process.env.META_AI_TOKEN': JSON.stringify(env.META_AI_TOKEN),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

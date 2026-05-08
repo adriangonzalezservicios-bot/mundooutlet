@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { isFirebaseConfigured, auth } from "../lib/firebase";
+import { isFirebaseConfigured, auth, firebaseConfig } from "../lib/firebase";
 import { signOut, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { Database, ShieldCheck, Save, LogOut, TerminalSquare, Cpu, Activity, Server, ActivitySquare, RefreshCw, Clock, LogIn, Brain, Trash2, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -368,8 +368,8 @@ export function Configuracion() {
               <div>
                 <h3 className="text-lg font-display font-medium text-white tracking-[0.1em] uppercase" >Base de Datos Cloud</h3>
                 <p className="text-[10px] font-mono font-bold text-[#f8fafc]/50 tracking-[0.2em] uppercase mt-0.5">Firestore Sync Node</p>
-                <div className="mt-2 text-[8px] font-mono text-[#38bdf8]/40">
-                  PROJECT_ID: gen-lang-client-0344454559
+                <div className="mt-2 text-[8px] font-mono text-[#38bdf8]/40 uppercase">
+                  PROJECT_ID: {firebaseConfig.projectId || "LOCAL_NODE"}
                 </div>
               </div>
             </div>
@@ -408,7 +408,7 @@ export function Configuracion() {
             <div className="grid gap-4 sm:grid-cols-2 text-[10px] font-mono">
                <div className="bg-black/20 p-3 rounded-sm border border-[#38bdf8]/10">
                  <p className="text-[#38bdf8]/40 mb-1">USUARIO ACTUAL:</p>
-                 <p className="text-white break-all">info@mundooutlet.com.ar</p>
+                 <p className="text-white break-all">{auth.currentUser?.email || "info@mundooutlet.com.ar"}</p>
                </div>
                <div className="bg-black/20 p-3 rounded-sm border border-[#38bdf8]/10">
                  <p className="text-[#38bdf8]/40 mb-1">UUID:</p>

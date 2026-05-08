@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { initializeFirestore, getDocFromServer, doc } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
-
+export { firebaseConfig };
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore with long polling to bypass potential proxy/network blocks
